@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
+require "bundler/setup"
+
+require "active_record"
 require "pg_multirange"
+
+require_relative "support/database"
+require_relative "support/database_cleaner"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -9,6 +15,14 @@ RSpec.configure do |config|
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
 
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
+end
+
+RSpec.configure do |config|
+  config.order = :random
+  config.disable_monkey_patching!
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
