@@ -1,10 +1,13 @@
 class PgMultirange::Attribute::Integer < PgMultirange::Attribute
- # '{[1,2),[2,6)}'::int4multirange
- def convert_postgres_string_to_timestamp_ranges(raw_string)
-    return [] if raw_string[2..-3].blank?
-    raw_string[2..-3].split("),[").map do |t|
-      s,e = t.split(",").map(&:to_i)
-      s..(e-1)
+  # '{[1,2),[2,6)}'::int4multirange
+  def convert_postgres_range_to_type(_exclude_start, b, e, exclude_end)
+    b = b.to_i
+    e = e.to_i
+
+    if exclude_end
+      b...e
+    else
+      b..e
     end
   end
 

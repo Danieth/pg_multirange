@@ -66,6 +66,20 @@ class PgMultirange::Attribute
   # def self.child_method_defined?(method_name)
   #   method_defined?(method_name) && method_defined?("method_added")
   # end
+
+  REGEX = /(\[|\()([^,]+),([^,]+)(\]|\))/
+  def convert_postgres_string_to_ruby_range(postgres_string)
+    ranges = postgres_string.scan(REGEX)
+
+    ranges.map do |(start_boundary, b, e, end_boundary)|
+      exclude_start = start_boundary == "("
+      exclude_end = end_boundary == ")"
+
+      convert_postgres_range_to_type(
+        exclude_start, b, e, exclude_end
+      )
+    end
+  end
 end
 
 require_relative 'attribute/integer'

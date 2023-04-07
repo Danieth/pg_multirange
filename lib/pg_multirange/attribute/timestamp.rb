@@ -1,13 +1,14 @@
 class PgMultirange::Attribute::Timestamp < PgMultirange::Attribute
 
   # '{[2011-01-01,2011-03-01], [2012-01-01,2023-01-01]}'::tsmultirange
-  def convert_postgres_string_to_ranges(raw_string)
-    return [] if raw_string[2..-3].blank?
-    raw_string[2..-3].split("],[").map do |t|
-      s,e = t.split(",").map do |a|
-        Time.find_zone("UTC").parse(a).to_time.utc
-      end
-      s..e
+  def convert_postgres_range_to_type(_exclude_start, b, e, exclude_end)
+    b = Time.find_zone("UTC").parse(b).to_time.utc
+    e = Time.find_zone("UTC").parse(e).to_time.utc
+
+    if exclude_end
+      b...e
+    else
+      b..e
     end
   end
 
