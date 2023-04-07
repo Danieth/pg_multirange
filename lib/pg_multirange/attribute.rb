@@ -1,70 +1,68 @@
 require 'multi_range'
 
-class PgMultirange::Attribute
-  attr_accessor :range
+class PgMultirange::Attribute < MultiRange
 
   def initialize(values)
     raise "PgMultirange::Value must be inherited from to be instantiated" if self.class == PgMultirange::Value
     # %i(convert_postgres_string_to_ranges to_postgres_string).each do |method|
     #   raise "PgMultirange::Value inherited class is missing #{method}" unless child_method_defined?(method)
     # end
-
     case values
-    when PgMultirange::Attribute
-      @range = values.range
-    when String
-      values = convert_postgres_string_to_ranges(values)
-      @range = MultiRange.new(values)
     when MultiRange
-      @range = values
+      super(values.ranges)
+    when String
+      values = convert_postgres_string_to_ruby_range(values)
+      super(values)
     when Array
-      @range = MultiRange.new(values)
+      super(values)
+    when Range
+      super([values])
     else
-      @range = MultiRange.new([])
+      super([])
     end
   end
 
-  def +(other_range)
-    self.class.new(@range | self.class.new(other_range).range)
+  # Contains all of the methods on the MultiRange object
+  def |(other_range)
+    other_range = self.class.new(other_range)
+    self.class.new(super(other_range))
   end
+  alias + |
 
   def -(other_range)
-    self.class.new(@range - self.class.new(other_range).range)
+    return super(other_range) if other_range.is_a?(Range)
+    other_ranges = self.class.new(other_range)
+    res = super(other_ranges)
+    self.class.new(res)
   end
 
-  def include?(range)
-    @range.include?(range)
-  end
-
-  def ranges
-    @range.ranges
+  def &(other_range)
+    other_range = self.class.new(other_range)
+    self.class.new(super(other_range))
   end
 
   def to_a
-    @range.ranges.map do |range|
+    @ranges.map do |range|
       range.minmax
     end
   end
 
-  # TODO bsearch
-  def overlaps?(range)
-    @range.ranges.any? do |r|
-      r.overlaps?(range)
-    end
-  end
+  # TODO optimize this with bsearch
+  # def overlaps?(range)
+  #   # Find the smallest index where it's start is >= range.start
+  #   first_greater_index = @range.ranges.bsearch_index do |r|
+  #     r.start >= range.start
+  #   end
+  #   return false if first_greater_index.nil?
 
-  REGEX = /(\[|\()([\d\w\:\-\+\s]*),\s*([\d\w\:\-\+\s]*)(\]|\))/
-  def convert_postgres_string_to_ranges(raw_string)
-    ranges = raw_string.scan(REGEX)
+  #   return true if @range.ranges[first_greater_index].overlaps?(range)
+  #   first_lesser_index = first_greater_index - 1
 
-    convert_postgres_range_to_range()
-  end
+  #   if first_lesser_index >= 0
+  #     return true if @range.ranges[first_lesser_index].overlaps?(range)
+  #   end
 
-  # def to_postgres_string
-  #   # Error
-  # end
-  # def self.child_method_defined?(method_name)
-  #   method_defined?(method_name) && method_defined?("method_added")
+  #   false
   # end
 
   REGEX = /(\[|\()([^,]+),([^,]+)(\]|\))/

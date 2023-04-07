@@ -14,7 +14,7 @@ class PgMultirange::Attribute::Timestamp < PgMultirange::Attribute
 
   PG_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
   def to_postgres_string
-    pg_ranges = @range.ranges.map do |range|
+    pg_ranges = @ranges.map do |range|
       internal_range = [range.begin, range.end].map do |timestamp|
         formatted = timestamp.strftime(PG_TIMESTAMP_FORMAT)
         "\"#{formatted}\""

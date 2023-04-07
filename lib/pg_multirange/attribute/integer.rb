@@ -12,8 +12,12 @@ class PgMultirange::Attribute::Integer < PgMultirange::Attribute
   end
 
   def to_postgres_string
-    pg_ranges = @range.ranges.map do |range|
-      "[#{range.begin},#{range.end+1})"
+    pg_ranges = @ranges.map do |range|
+      if range.exclude_end?
+        "[#{range.begin},#{range.end - 1}]"
+      else
+        "[#{range.begin},#{range.end}]"
+      end
     end.join(',')
 
     "{#{pg_ranges}}"
