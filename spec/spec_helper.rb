@@ -2,8 +2,8 @@
 
 require "bundler/setup"
 
-require "active_record"
 require "pg_multirange"
+require "active_record"
 
 require_relative "support/database"
 require_relative "support/database_cleaner"
@@ -25,5 +25,41 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+end
+
+RSpec.shared_context 'value_tests' do
+  let(:field) { nil }
+
+  subject do
+    Class.new(ActiveRecord::Base) do
+      self.table_name = "calendars"
+      ts_multirange :availability
+      int_multirange :epochs
+      int_multirange :big_int_epochs
+      # tstz_multirange :international_availability
+      # numeric_multirange :meeting_durations
+      # date_multirange :bookable_days
+    end
+  end
+
+  def expect_equal_after_saving_changes(initial_value, *ranges)
+    record = subject.new(
+      {}.tap do |hash|
+        hash[field] = initial_value
+      end
+    )
+    record.save!
+    record.reload
+    ranges = "{#{ranges.join(',')}}"
+    expect(record.send(field).to_postgres_string).to eq(ranges)
+  end
+
+  def expect_multirange_changes(record, *ranges)
+    ranges = "{#{ranges.join(',')}}"
+    expect(record.send(field).to_postgres_string).to eq(ranges)
+    record.save!
+    record.reload
+    expect(record.send(field).to_postgres_string).to eq(ranges)
   end
 end
