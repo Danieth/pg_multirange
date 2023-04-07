@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   # For more information and examples about making a new gem, check out ou
   # guide at: https://bundler.io/guides/creating_gem.html
 
-  s.add_dependency "multi_range", "~> 2.0"
+  s.add_dependency "multi_range"
   s.add_dependency "activerecord", ">= 5.2", "< 8.0"
   s.add_dependency "pg", ">= 0.19", "< 2"
 
