@@ -16,7 +16,7 @@ class PgMultirange::Value::Timestamp < PgMultirange::Value
 
   PG_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
   def to_postgres_string
-    pg_ranges = @range.ranges.map do |range|
+    @range.ranges.map do |range|
       internal_range = [range.begin, range.end].map do |timestamp|
         formatted = timestamp.strftime(PG_TIMESTAMP_FORMAT)
         "\"#{formatted}\""
@@ -24,9 +24,5 @@ class PgMultirange::Value::Timestamp < PgMultirange::Value
 
       "[#{internal_range}]"
     end.join(',')
-
-    "{#{pg_ranges}}::tsmultirange".tap do |a|
-      puts "is:", a
-    end
   end
 end
