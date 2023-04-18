@@ -1,3 +1,7 @@
+# WIP
+
+This project is not yet functional. I intend to have this as a fully functional gem by mid May.
+
 # PgMultirange
 
 Adds support for PostgreSQL 14+ multiranges to ActiveRecord. Adds:
